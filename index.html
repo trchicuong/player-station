@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Player Station - Music Station</title>
+
+    <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/style.css">
+</head>
+
+<body class="bg-gray-900 text-white overflow-hidden">
+    <script src="https://sdk.scdn.co/spotify-player.js"></script>
+
+    <div id="particles-container"></div>
+    <div class="fixed top-0 left-0 w-full h-full z-[-2] overflow-hidden">
+        <video autoplay muted loop playsinline id="bg-video" class="w-full h-full object-cover brightness-50">
+            <source src="videos/background.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <div id="app" class="flex items-center justify-center min-h-screen p-4">
+        <div id="login-view" class="text-center">
+            <h1 class="text-4xl font-bold mb-4 text-gradient">Player Station</h1>
+            <p class="text-gray-300 mb-8">Vui lòng đăng nhập với tài khoản <b class="text-green-400">Spotify
+                    Premium</b>
+                để bắt đầu.</p>
+            <button id="login-btn"
+                class="bg-green-500 hover:bg-green-400 text-white font-bold py-3 px-6 rounded-full transition-transform transform active:scale-95">
+                Đăng nhập với Spotify
+            </button>
+        </div>
+
+        <div id="player-view"
+            class="relative w-full max-w-sm bg-black/50 backdrop-blur-lg rounded-2xl shadow-2xl p-6 space-y-4 hidden">
+            <div class="flex justify-between items-center mb-2">
+                <button id="playlist-btn" class="p-2 rounded-full hover:bg-white/10">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                </button>
+                <button id="logout-btn" class="p-2 rounded-full hover:bg-white/10">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div id="playlist-menu" class="absolute top-12 left-6 right-6 z-10 bg-gray-800 rounded-lg shadow-xl hidden">
+            </div>
+
+            <img id="cover-art" src="images/cover.gif" alt="Ảnh bìa" class="w-full rounded-lg shadow-lg aspect-square">
+
+            <div class="text-center">
+                <h2 id="song-title" class="text-xl font-bold truncate">...</h2>
+                <p id="song-artist" class="text-sm text-gray-400">...</p>
+            </div>
+
+            <div class="space-y-1">
+                <div class="w-full h-1.5 rounded-full progress-bar-bg overflow-hidden">
+                    <div id="progress-bar" class="h-full progress-bar-fg rounded-full" style="width: 0%;"></div>
+                </div>
+                <div class="flex justify-between text-xs text-gray-400">
+                    <span id="current-time">0:00</span>
+                    <span id="total-time">0:00</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-[1fr,auto,1fr] items-center gap-4">
+                <div class="flex items-center space-x-2">
+                    <svg id="volume-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" class="text-gray-400 flex-shrink-0">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    </svg>
+                    <input id="volume-slider" type="range" min="0" max="1" step="0.01" value="0.5" class="w-full">
+                </div>
+
+                <div class="flex items-center justify-center space-x-4">
+                    <button id="prev-btn" class="p-2 rounded-full hover:bg-white/10 active:bg-white/20"><svg
+                            xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                            fill="currentColor">
+                            <path d="M6 18h2V6H6v12zm3.5-6L18 6v12l-8.5-6z" />
+                        </svg></button>
+                    <button id="play-pause-btn"
+                        class="bg-purple-600 hover:bg-purple-500 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg flex-shrink-0"><svg
+                            id="play-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+                            fill="currentColor">
+                            <path d="M8 5v14l11-7z" />
+                        </svg><svg id="pause-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32"
+                            viewBox="0 0 24 24" fill="currentColor" class="hidden">
+                            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                        </svg></button>
+                    <button id="next-btn" class="p-2 rounded-full hover:bg-white/10 active:bg-white/20"><svg
+                            xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                            fill="currentColor">
+                            <path d="M16 18h2V6h-2v12zm-4.5-6L4 6v12l7.5-6z" />
+                        </svg></button>
+                </div>
+
+                <div class="flex items-center justify-end space-x-2">
+                    <button id="queue-btn" class="p-2 rounded-full hover:bg-white/10">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="12" x2="2" y2="12" />
+                            <line x1="22" y1="6" x2="7" y2="6" />
+                            <line x1="22" y1="18" x2="7" y2="18" />
+                        </svg>
+                    </button>
+                    <button id="repeat-btn" class="p-2 rounded-full hover:bg-white/10 repeat-btn">
+                        <svg class="repeat-off-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="17 1 21 5 17 9"></polyline>
+                            <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                            <polyline points="7 23 3 19 7 15"></polyline>
+                            <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                        </svg>
+                        <svg class="repeat-context-icon hidden" xmlns="http://www.w3.org/2000/svg" width="20"
+                            height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="17 1 21 5 17 9"></polyline>
+                            <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                            <polyline points="7 23 3 19 7 15"></polyline>
+                            <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                        </svg>
+                        <svg class="repeat-track-icon hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 2l4 4-4 4" />
+                            <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+                            <path d="M7 22l-4-4 4-4" />
+                            <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+                            <path d="M11 10h1v4" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="queue-modal"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-gray-800 w-full max-w-md max-h-[80vh] rounded-lg shadow-xl flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b border-gray-700">
+                <h3 class="text-lg font-bold">Hàng đợi</h3>
+                <button id="close-queue-btn" class="p-2 rounded-full hover:bg-white/10">&times;</button>
+            </div>
+            <div id="queue-content" class="p-4 space-y-3 overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
