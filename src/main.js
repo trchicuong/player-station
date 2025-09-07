@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await sdkReadyPromise;
 
         player = new Spotify.Player({
-            name: 'Lofi & Chill Web Player',
+            name: 'Player Station - Music Station',
             getOAuthToken: cb => {
                 cb(token);
             },
