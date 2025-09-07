@@ -74,7 +74,7 @@ input[type=range]::-moz-range-thumb {
 }
 
 .repeat-btn.active {
-    color: #8b5cf6;
+    color: #A1A1AA;
     /* purple-500 */
 }
 
